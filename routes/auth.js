@@ -6,13 +6,6 @@ const User = require("../models/user");
 
 const router = express.Router();
 
-router.get("/join", async (req, res, next) => {
-  return res.json({
-    code: 200,
-    message: "토큰이 발급되었습니다.",
-  });
-});
-
 router.post("/join", isNotLoggedIn, async (req, res, next) => {
   const { email, nick, password } = req.body;
   try {
@@ -51,7 +44,6 @@ router.post("/login", isNotLoggedIn, (req, res, next) => {
         code: 400,
         message: "존재하지 않는 유저입니다.",
       });
-      return res.redirect(`/?loginError=${info.message}`);
     }
     return req.login(user, (loginError) => {
       if (loginError) {

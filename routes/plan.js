@@ -4,6 +4,36 @@ const UserPlans = require("../models/userPlans");
 const fs = require("fs");
 const router = express.Router();
 
+router.get("/", async (req, res, next) => {
+  const category = req.query["category"];
+  try {
+    fs.exists(`./uploads/${category}.json`, function(exists) {
+      if (exists) {
+        fs.readFile(`./uploads/${category}.json`, function(err, data) {
+          let json = JSON.parse(data);
+          res.json({
+            code: 200,
+            message: "성공적으로 불러왔습니다.",
+            query: category,
+            plan: json,
+
+            exist: `./uploads/${category}.json`,
+          });
+        });
+      } else {
+        res.json({
+          code: 400,
+          message: "선택한 플랜이 존재하지 않습니다.",
+          query: category,
+        });
+      }
+    });
+  } catch (err) {
+    console.error(err);
+    return next(error);
+  }
+});
+
 router.post("/load", async (req, res, next) => {
   const { category } = req.body;
   try {
