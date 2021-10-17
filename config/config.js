@@ -2,7 +2,7 @@ require("dotenv").config();
 
 module.exports = {
   development: {
-    username: "planact",
+    username: "root",
     password: process.env.SEQUELIZE_PASSWORD,
     database: "planact",
     // host: "planact.cltshxneoosu.us-east-2.rds.amazonaws.com",
@@ -10,7 +10,7 @@ module.exports = {
     dialect: "mysql",
   },
   test: {
-    username: "planact",
+    username: "root",
     password: process.env.SEQUELIZE_PASSWORD,
     database: "planact",
     host: "127.0.0.1",
@@ -18,8 +18,8 @@ module.exports = {
   },
   production: {
     username: "root",
-    password: null,
-    database: "database_production",
+    password: process.env.SEQUELIZE_PASSWORD,
+    database: "planact",
     host: "127.0.0.1",
     dialect: "mysql",
   },
