@@ -12,9 +12,10 @@ router.get("/", async (req, res, next) => {
       include: { model: Domain },
     });
     res.json({
-      status:500,
-      message: 'hello'
-    })
+      status: 500,
+
+      message: "hello",
+    });
     // res.render("login", {
     //   user,
     //   domains: user && user.Domains,
