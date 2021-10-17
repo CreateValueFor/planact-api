@@ -17,8 +17,8 @@ const redisClient = redis.createClient({
   url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
   password: process.env.REDIS_PASSWORD,
 });
-const authRouter = require("./routes/auth");
 const indexRouter = require("./routes");
+const authRouter = require("./routes/auth");
 const planRouter = require("./routes/plan");
 const { sequelize } = require("./models");
 const passportConfig = require("./passport");
