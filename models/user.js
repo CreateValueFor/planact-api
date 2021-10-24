@@ -37,7 +37,7 @@ module.exports = class User extends Sequelize.Model {
   }
   static associate(db) {
     db.User.hasMany(db.UserPlans);
-    db.User.hasMany(db.Domain);
+
     db.User.hasMany(db.Inquiry);
   }
 };
