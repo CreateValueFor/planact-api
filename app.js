@@ -20,6 +20,8 @@ const redisClient = redis.createClient({
 const indexRouter = require("./routes");
 const authRouter = require("./routes/auth");
 const planRouter = require("./routes/plan");
+const inquiryRouter = require("./routes/inquiry");
+
 const { sequelize } = require("./models");
 const passportConfig = require("./passport");
 const logger = require("./logger");
@@ -73,6 +75,7 @@ app.use(passport.session());
 app.use("/auth", authRouter);
 app.use("/", indexRouter);
 app.use("/plan", planRouter);
+app.use("/inquiry", inquiryRouter);
 
 app.use((req, res, next) => {
   const error = new Error(`${req.method} ${req.url} 라우터가 없습니다.`);

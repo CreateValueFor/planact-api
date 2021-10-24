@@ -2,7 +2,7 @@ const express = require("express");
 const { v4: uuidv4 } = require("uuid");
 const { User, Domain } = require("../models");
 const { isLoggedIn } = require("./middlewares");
-const bcrypt = require("bcrypt");
+
 const router = express.Router();
 
 router.get("/", async (req, res, next) => {
