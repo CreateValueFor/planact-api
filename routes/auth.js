@@ -6,13 +6,26 @@ const User = require("../models/user");
 
 const router = express.Router();
 
+router.get("/session", async (req, res, next) => {
+  try {
+    return res.json({
+      message: req.sessionID,
+      email: req.session.email,
+      nick: req.session.nick,
+    });
+  } catch (err) {
+    console.error(error);
+    return next(error);
+  }
+});
+
 router.post("/join", isNotLoggedIn, async (req, res, next) => {
   const { email, nick, password } = req.body;
   try {
     const exUser = await User.findOne({ where: { email } });
     if (exUser) {
-      return res.json({
-        code: 400,
+      return res.status(202).json({
+        code: 202,
         message: "이미 존재하는 유저입니다.",
       });
     }
@@ -40,11 +53,13 @@ router.post("/login", isNotLoggedIn, (req, res, next) => {
       return next(authError);
     }
     if (!user) {
-      return res.json({
-        code: 400,
+      return res.status(202).json({
+        code: 202,
         message: "존재하지 않는 유저입니다.",
       });
     }
+    req.session.email = user.email;
+    req.session.nick = user.nick;
     return req.login(user, (loginError) => {
       if (loginError) {
         console.error(loginError);
@@ -59,12 +74,21 @@ router.post("/login", isNotLoggedIn, (req, res, next) => {
   })(req, res, next);
 });
 router.get("/logout", isLoggedIn, (req, res) => {
-  req.logout();
-  req.session.destroy();
-  return res.json({
-    code: 200,
-    message: "정상적으로 로그아웃되었습니다.",
-  });
+  try {
+    req.logout();
+    req.session.destroy();
+
+    return res.json({
+      code: 200,
+      message: "정상적으로 로그아웃되었습니다.",
+    });
+  } catch (err) {
+    res.status(202).json({
+      code: 202,
+      message: "문제가 발생했습니다.",
+      error: err,
+    });
+  }
 });
 
 module.exports = router;
