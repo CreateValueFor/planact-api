@@ -27,6 +27,7 @@ const passportConfig = require("./passport");
 const logger = require("./logger");
 
 const app = express();
+app.use(cors());
 passportConfig();
 app.set("port", process.env.PORT || 8000);
 app.set("view engine", "html");
@@ -49,7 +50,6 @@ if (process.env.NODE_ENV === "production") {
   app.use(hpp());
 } else {
   app.use(morgan("dev"));
-  app.use(cors());
 }
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json());
