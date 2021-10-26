@@ -27,6 +27,7 @@ const passportConfig = require("./passport");
 const logger = require("./logger");
 
 const app = express();
+app.options("*", cors());
 app.use(cors());
 passportConfig();
 app.set("port", process.env.PORT || 8000);
