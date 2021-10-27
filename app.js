@@ -28,10 +28,10 @@ const logger = require("./logger");
 
 const app = express();
 app.use(cors());
-// const corsOpt = function(req, callback) {
-//   callback(null, { origin: true });
-// };
-// app.options("*", cors(corsOpt));
+const corsOpt = function(req, callback) {
+  callback(null, { origin: true });
+};
+app.options("*", cors(corsOpt));
 
 passportConfig();
 app.set("port", process.env.PORT || 8000);

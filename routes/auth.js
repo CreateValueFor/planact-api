@@ -3,7 +3,7 @@ const passport = require("passport");
 const bcrypt = require("bcryptjs");
 const { isLoggedIn, isNotLoggedIn } = require("./middlewares");
 const User = require("../models/user");
-const cors = require("cors");
+
 const router = express.Router();
 
 router.get("/session", async (req, res, next) => {
@@ -46,7 +46,7 @@ router.post("/join", isNotLoggedIn, async (req, res, next) => {
   }
 });
 
-router.post("/login", cors(), isNotLoggedIn, (req, res, next) => {
+router.post("/login", isNotLoggedIn, (req, res, next) => {
   passport.authenticate("local", (authError, user, info) => {
     if (authError) {
       console.error(authError);
