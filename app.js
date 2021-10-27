@@ -29,21 +29,28 @@ const passportConfig = require("./passport");
 const logger = require("./logger");
 
 const app = express();
-
-var corsOptions = {
-  origin: function(origin, callback) {
-    var isWhitelisted = whitelist.indexOf(origin) !== -1;
-    callback(null, isWhitelisted);
-    // callback expects two parameters: error and options
-  },
-  credentials: true,
-};
-app.use(cors(corsOptions));
-
-const corsOpt = function(req, callback) {
-  callback(null, { origin: true });
-};
-app.options("*", cors(corsOpt));
+// app.use((req, res, next) => {
+//   res.header('Access-Control-Allow-Origin', '*');
+//   res.header(
+//     'Access-Control-Allow-Headers',
+//     'Origin, X-Requested-With,Content-Type,Accept'
+//   );
+//   next();
+// });
+// var corsOptions = {
+//   origin: function(origin, callback) {
+//     var isWhitelisted = whitelist.indexOf(origin) !== -1;
+//     callback(null, isWhitelisted);
+//     // callback expects two parameters: error and options
+//   },
+//   credentials: true,
+// };
+// app.use(cors(corsOptions));
+app.use(cors());
+// const corsOpt = function(req, callback) {
+//   callback(null, { origin: true });
+// };
+// app.options("*", cors(corsOpt));
 
 passportConfig();
 app.set("port", process.env.PORT || 8000);
@@ -55,7 +62,7 @@ nunjucks.configure("views", {
 sequelize
   .sync({ force: false })
   .then(() => {
-    console.log("데이터 베이스 연결 성공");
+    console.log("Database connected successfully");
   })
   .catch((err) => {
     console.error(err);
@@ -95,7 +102,7 @@ app.use("/plan", planRouter);
 app.use("/inquiry", inquiryRouter);
 
 app.use((req, res, next) => {
-  const error = new Error(`${req.method} ${req.url} 라우터가 없습니다.`);
+  const error = new Error(`${req.method} ${req.url} router does not exist`);
   error.status = 404;
 
   logger.error(error.message);

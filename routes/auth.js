@@ -47,8 +47,17 @@ router.post("/join", isNotLoggedIn, async (req, res, next) => {
   }
 });
 
-router.post("/login", isNotLoggedIn, (req, res, next) => {
+router.options("/login", (req, res) => {
   res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Authorization, Content-Length, X-Requested-With"
+  );
+  res.send();
+});
+
+router.post("/login", isNotLoggedIn, (req, res, next) => {
   passport.authenticate("local", (authError, user, info) => {
     if (authError) {
       console.error(authError);
@@ -57,7 +66,7 @@ router.post("/login", isNotLoggedIn, (req, res, next) => {
     if (!user) {
       return res.status(202).json({
         code: 202,
-        message: "존재하지 않는 유저입니다.",
+        message: "User does not exist",
       });
     }
     req.session.email = user.email;
@@ -69,12 +78,13 @@ router.post("/login", isNotLoggedIn, (req, res, next) => {
       }
       return res.json({
         code: 200,
-        message: "정상적으로 로그인되었습니다.",
+        message: "Login success",
         user: { email: user.email, nick: user.nick },
       });
     });
   })(req, res, next);
 });
+
 router.get("/logout", isLoggedIn, (req, res) => {
   res.header("Access-Control-Allow-Origin", "*");
   try {
