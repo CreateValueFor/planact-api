@@ -12,6 +12,8 @@ const nunjucks = require("nunjucks");
 const dotenv = require("dotenv");
 const cors = require("cors");
 
+const whitelist = ["https://layout.planact/co.kr", "*"];
+
 dotenv.config();
 const redisClient = redis.createClient({
   url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
@@ -27,7 +29,17 @@ const passportConfig = require("./passport");
 const logger = require("./logger");
 
 const app = express();
-app.use(cors());
+
+var corsOptions = {
+  origin: function(origin, callback) {
+    var isWhitelisted = whitelist.indexOf(origin) !== -1;
+    callback(null, isWhitelisted);
+    // callback expects two parameters: error and options
+  },
+  credentials: true,
+};
+app.use(cors(corsOptions));
+
 const corsOpt = function(req, callback) {
   callback(null, { origin: true });
 };
