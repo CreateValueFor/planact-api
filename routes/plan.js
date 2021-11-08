@@ -21,6 +21,19 @@ const storage = multer.diskStorage({
   },
 });
 const uploader = multer({ storage: storage });
+
+const dailyImageStorage = multer.diskStorage({
+  destination: (req, file, callback) => {
+    callback(null, "uploads/daily/");
+  },
+  filename: (req, file, callback) => {
+    const ext = file.originalname.split(".")[1];
+    const name = file.fieldname;
+    callback(null, `${name}.${ext}`);
+  },
+});
+const imageUploader = multer({ storage: dailyImageStorage });
+
 const router = express.Router();
 //플랜 불러오기 by IP
 router.get("/", async (req, res, next) => {
@@ -192,6 +205,40 @@ router.get("/summary", async (req, res, next) => {
   }
 });
 
+router.post("/daily/img", imageUploader.any(), async (req, res, next) => {
+  try {
+    console.log(req.body);
+    res.json({
+      code: 200,
+      message: "success",
+    });
+  } catch (err) {
+    console.error(err);
+  }
+});
+
+router.post("/daily/images", async (req, res, next) => {
+  let images = [];
+  let image;
+  try {
+    req.body.img.map((data) => {
+      if (fs.existsSync(`uploads/daily/${data}`)) {
+        image = fs.readFileSync(`uploads/daily/${data}`);
+        image = image.toString("base64");
+
+        images.push({ name: data, img: image });
+      }
+    });
+    res.json({
+      code: 200,
+      message: "success",
+      list: images,
+    });
+  } catch (err) {
+    console.error(err);
+  }
+});
+
 router.post("/daily", async (req, res, next) => {
   let exJSON;
   try {
@@ -222,7 +269,7 @@ router.get("/daily", async (req, res, next) => {
   const path = `public/plans/${id}.json`;
   try {
     if (!fs.existsSync(path)) {
-      res.json({
+      return res.json({
         code: 202,
         message: "파일이 존재하지 않습니다.",
       });
@@ -234,6 +281,46 @@ router.get("/daily", async (req, res, next) => {
     });
   } catch (error) {
     console.error(error);
+  }
+});
+
+router.delete("/daily", async (req, res, next) => {
+  try {
+    const planID = req.query.id;
+    const dailyID = req.query.dailyId;
+    console.log(dailyID);
+    const path = `public/plans/${planID}.json`;
+    if (!fs.existsSync(path)) {
+      return res.json({
+        code: 200,
+        message: "파일이 존재하지 않습니다.",
+      });
+    }
+    const plans = JSON.parse(fs.readFileSync(path));
+    plans.map((data) => {
+      if (data.id == dailyID) {
+        data.events.map((event) => {
+          if (fs.existsSync(`uploads/daily/${event.thumb}`)) {
+            fs.unlinkSync(`uploads/daily/${event.thumb}`);
+          }
+        });
+      }
+    });
+    let newPlans = [];
+    plans.map((data) => {
+      if (data.id != dailyID) {
+        newPlans.push(data);
+      }
+    });
+    console.log(newPlans);
+
+    fs.writeFileSync(path, JSON.stringify(newPlans));
+    return res.json({
+      code: 200,
+      message: "정상적으로 삭제되었습니다.",
+    });
+  } catch (err) {
+    console.error(err);
   }
 });
 
