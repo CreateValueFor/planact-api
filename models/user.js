@@ -28,7 +28,7 @@ module.exports = class User extends Sequelize.Model {
         timestamps: true,
         underscored: false,
         modelName: "User",
-        tableName: "users",
+        tableName: "tb_users",
         paranoid: true,
         charset: "utf8",
         collate: "utf8_general_ci",
@@ -37,7 +37,8 @@ module.exports = class User extends Sequelize.Model {
   }
   static associate(db) {
     db.User.hasMany(db.UserPlans);
-
     db.User.hasMany(db.Inquiry);
+    db.User.hasMany(db.PlanSummary);
+    db.User.hasMany(db.Logs);
   }
 };

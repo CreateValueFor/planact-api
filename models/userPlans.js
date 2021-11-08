@@ -4,18 +4,9 @@ module.exports = class userPlans extends Sequelize.Model {
   static init(sequelize) {
     return super.init(
       {
-        email: {
-          type: Sequelize.STRING(40),
-          allowNull: false,
-        },
-        genre: {
-          type: Sequelize.STRING(100),
-          allowNull: false,
-        },
-        content: {
-          type: Sequelize.STRING(200),
-          allowNull: false,
-          defaultValue: "none",
+        flag: {
+          type: Sequelize.TINYINT(2),
+          allowNull: true,
         },
       },
       {
@@ -23,7 +14,7 @@ module.exports = class userPlans extends Sequelize.Model {
         timestamps: true,
         underscored: false,
         modelName: "UserPlans",
-        tableName: "user_plans",
+        tableName: "tb_user_plans",
         paranoid: false,
         charset: "utf8mb4",
         collate: "utf8mb4_general_ci",
@@ -32,5 +23,6 @@ module.exports = class userPlans extends Sequelize.Model {
   }
   static associate(db) {
     db.UserPlans.belongsTo(db.User);
+    db.UserPlans.belongsTo(db.PlanSummary);
   }
 };
