@@ -7,6 +7,9 @@
     "dev": "nodemon server",
     "start": "cross-env NODE_ENV=production PORT=443 pm2 start server.js -i 0"
   },
+  "nodemonConfig":{
+    "ignore" : ["public/*"]
+  },
   "author": "",
   "license": "ISC",
   "dependencies": {
@@ -24,6 +27,7 @@
     "hpp": "^0.2.3",
     "jsonwebtoken": "^8.5.1",
     "morgan": "^1.10.0",
+    "multer": "^1.4.3",
     "mysql2": "^2.3.0",
     "nunjucks": "^3.2.3",
     "passport": "^0.5.0",

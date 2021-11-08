@@ -2,3 +2,7 @@ node_modules
 
 *.log
 coverage
+public/plans
+public
+uploads/*.png
+uploads/*.jpg
