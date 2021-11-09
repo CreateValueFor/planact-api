@@ -6,7 +6,7 @@ const multer = require("multer");
 const PlanSummary = require("../models/plan");
 const { v4: uuidv4 } = require("uuid");
 
-let imageID = uuidv4();
+let imageID;
 
 const storage = multer.diskStorage({
   destination: (req, file, callback) => {
@@ -14,6 +14,7 @@ const storage = multer.diskStorage({
   },
   filename: (req, file, callback) => {
     const ext = file.originalname.split(".")[1];
+    imageID = uuidv4();
     callback(null, `${imageID}.${ext}`);
   },
   encoding: (req, file, callback) => {
@@ -136,7 +137,7 @@ router.post("/save", async (req, res, next) => {
   }
 });
 
-//plan 업로드
+//plan summary 업로드
 router.post("/summary", uploader.single("thumb"), async (req, res, next) => {
   let ext;
   if (req.file) {
@@ -162,12 +163,58 @@ router.post("/summary", uploader.single("thumb"), async (req, res, next) => {
       sns,
       category,
       planID,
-      imgID: `${imageID}.${ext}`,
+      imgID: ext ? `${imageID}.${ext}` : "",
       UserId: exUser.id,
     });
     return res.json({
       code: 200,
       req: req.body,
+    });
+  } catch (error) {
+    console.error(error);
+    return next(error);
+  }
+});
+
+//plan summary 업데이트
+router.patch("/summary", uploader.single("thumb"), async (req, res, next) => {
+  try {
+    let ext;
+
+    const id = req.query.id;
+    const { title, sns, author, category, email } = req.body;
+    const exUser = await User.findOne({ where: { email } });
+    const exPlanSummary = await PlanSummary.findOne({ where: { id } });
+    const pastImgID = exPlanSummary.imgID;
+    // file 이 존재할 경우 확장자 설정 및 존재하지 않을 경우 이름 처리
+    if (req.file) {
+      ext = req.file.originalname.split(".")[1];
+
+      if (pastImgID) {
+        fs.unlinkSync(`uploads/${pastImgID}`);
+      }
+    }
+
+    if (!exUser) {
+      return res.status(202).json({
+        code: 202,
+        message: "유저가 존재하지 않습니다.",
+      });
+    }
+    await PlanSummary.update(
+      {
+        author,
+        title,
+        sns,
+        category,
+        imgID: ext ? `${imageID}.${ext}` : pastImgID,
+        UserId: exUser.id,
+      },
+      { where: { id } }
+    );
+    return res.json({
+      code: 200,
+      message: "정상적으로 수정되었습니다.",
     });
   } catch (error) {
     console.error(error);
@@ -195,6 +242,22 @@ router.get("/summary", async (req, res, next) => {
       const plans = await PlanSummary.findOne({
         where: { id },
       });
+      if (plans.imgID) {
+        if (!fs.existsSync(`uploads/${plans.imgID}`)) {
+          return res.json({
+            code: 202,
+            message: "이미지가 존재하지 않습니다.",
+            plans,
+          });
+        }
+        const imgFile = fs.readFileSync(`uploads/${plans.imgID}`);
+        const imgBase64 = Buffer.from(imgFile).toString("base64");
+        return res.json({
+          code: 200,
+          plans,
+          img: imgBase64,
+        });
+      }
       return res.status(200).json({
         code: 200,
         plans,
@@ -233,6 +296,29 @@ router.post("/daily/images", async (req, res, next) => {
       code: 200,
       message: "success",
       list: images,
+    });
+  } catch (err) {
+    console.error(err);
+  }
+});
+
+router.patch("/daily", async (req, res, next) => {
+  try {
+    console.log(req.body);
+    const { planId, dailyplan } = req.body;
+    const path = `public/plans/${planId}.json`;
+    if (!fs.existsSync(path)) {
+      res.json({
+        code: 202,
+        message: "플랜 데이터가 존재하지 않습니다.",
+      });
+    }
+    console.log(dailyplan);
+    const json = JSON.stringify(dailyplan);
+    fs.writeFileSync(path, json);
+    res.json({
+      code: 200,
+      message: "정상적으로 저장되었습니다.",
     });
   } catch (err) {
     console.error(err);
