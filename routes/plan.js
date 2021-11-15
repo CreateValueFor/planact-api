@@ -5,6 +5,9 @@ const fs = require("fs");
 const multer = require("multer");
 const PlanSummary = require("../models/plan");
 const { v4: uuidv4 } = require("uuid");
+// const { sequelize } = require("../models/user");
+const sequelize = require("sequelize");
+const Op = sequelize.Op;
 
 let imageID;
 
@@ -225,7 +228,46 @@ router.patch("/summary", uploader.single("thumb"), async (req, res, next) => {
 router.get("/summary", async (req, res, next) => {
   const email = req.query.email;
   const id = req.query.id;
+  const search = req.query.search;
+  const category = req.query.category;
+  const order = req.query.order;
   try {
+    if (search) {
+      const plans = await PlanSummary.findAndCountAll({
+        where: {
+          [Op.or]: [
+            {
+              title: {
+                [Op.like]: "%" + search + "%",
+              },
+            },
+            {
+              author: {
+                [Op.like]: "%" + search + "%",
+              },
+            },
+          ],
+        },
+      });
+      return res.json({
+        code: 200,
+        plans: plans.rows,
+        count: plans.count,
+      });
+    }
+
+    if (email === "all") {
+      const plans = await PlanSummary.findAndCountAll({
+        order: [["createdAt", "DESC"]],
+      });
+      // const count = await PlanSummary.count
+      return res.status(200).json({
+        code: 200,
+        plans: plans.rows,
+        count: plans.count,
+        message: "플랜 전체를 가져왔습니다.",
+      });
+    }
     if (email) {
       const exUser = await User.findOne({ where: { email } });
 
