@@ -4,6 +4,10 @@ module.exports = class userPlans extends Sequelize.Model {
   static init(sequelize) {
     return super.init(
       {
+        startdate: {
+          type: Sequelize.STRING(20),
+          allowNull: false,
+        },
         flag: {
           type: Sequelize.TINYINT(2),
           allowNull: true,

@@ -230,10 +230,15 @@ router.get("/summary", async (req, res, next) => {
   const id = req.query.id;
   const search = req.query.search;
   const category = req.query.category;
-  const order = req.query.order;
+  let order = "createdAt";
+
+  if (req.query.category !== "") {
+    order = req.query.order;
+  }
   try {
     if (search) {
       const plans = await PlanSummary.findAndCountAll({
+        order: [["createdAt", "DESC"]],
         where: {
           [Op.or]: [
             {
@@ -446,6 +451,66 @@ router.delete("/daily", async (req, res, next) => {
     return res.json({
       code: 200,
       message: "정상적으로 삭제되었습니다.",
+    });
+  } catch (err) {
+    console.error(err);
+  }
+});
+
+router.post("/download", async (req, res, next) => {
+  try {
+    const id = req.body.id;
+    const start = req.body.date;
+    const email = req.body.email;
+
+    const exUser = await User.findOne({ where: { email } });
+    if (!exUser) {
+      res.status(202).json({
+        code: 202,
+        message: "유저가 존재하지 않습니다.",
+      });
+    }
+    await UserPlans.create({
+      UserId: exUser.id,
+      PlanSummaryId: id,
+      startdate: start,
+    });
+
+    res.json({
+      code: 200,
+      id,
+      start,
+      email,
+    });
+  } catch (err) {
+    console.error(err);
+  }
+});
+
+router.get("/download", async (req, res, next) => {
+  const email = req.query.email;
+  const id = req.query.id;
+  try {
+    const exUser = await User.findOne({ where: { email } });
+    if (!exUser) {
+      res.status(202).json({
+        code: 202,
+        message: "유저가 존재하지 않습니다.",
+      });
+    }
+    const exist = await UserPlans.findOne({
+      where: { UserId: exUser.id, PlanSummaryId: id },
+    });
+    if (!exist) {
+      res.json({
+        code: 200,
+        downloaded: false,
+      });
+    }
+    res.json({
+      code: 200,
+      downloaded: true,
+      start: exist.startdate,
     });
   } catch (err) {
     console.error(err);
