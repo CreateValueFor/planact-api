@@ -475,6 +475,12 @@ router.post("/download", async (req, res, next) => {
       PlanSummaryId: id,
       startdate: start,
     });
+    await PlanSummary.update(
+      {
+        downloads: sequelize.literal("downloads + 1"),
+      },
+      { where: { id } }
+    );
 
     res.json({
       code: 200,
@@ -511,6 +517,41 @@ router.get("/download", async (req, res, next) => {
       code: 200,
       downloaded: true,
       start: exist.startdate,
+    });
+  } catch (err) {
+    console.error(err);
+  }
+});
+
+router.get("/render", async (req, res, next) => {
+  const email = req.query.email;
+  let data = [];
+  try {
+    const exUser = await User.findOne({ where: { email } });
+    const downloaded = await UserPlans.findAll({
+      where: { UserId: exUser.id },
+    });
+    let path;
+    let plan;
+    let summary;
+    for (let elem of downloaded) {
+      summary = await PlanSummary.findOne({
+        where: { id: elem.PlanSummaryId },
+      });
+
+      path = `public/plans/${elem.PlanSummaryId}.json`;
+      if (fs.existsSync(path)) {
+        plan = JSON.parse(fs.readFileSync(path));
+        data.push({
+          start: elem.startdate,
+          summary: summary,
+          plan: plan,
+        });
+      }
+    }
+    res.json({
+      code: 200,
+      data,
     });
   } catch (err) {
     console.error(err);
