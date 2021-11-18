@@ -493,6 +493,50 @@ router.post("/download", async (req, res, next) => {
   }
 });
 
+router.delete("/download", async (req, res, next) => {
+  try {
+    const id = req.query.id;
+    const email = req.query.email;
+    if (!email) {
+      req.json({
+        code: 500,
+        message: "email이 없습니다.",
+      });
+    }
+    const exUser = await User.findOne({ where: { email } });
+    if (!exUser) {
+      res.status(202).json({
+        code: 202,
+        message: "유저가 존재하지 않습니다.",
+      });
+    }
+
+    await UserPlans.destroy({
+      where: {
+        UserId: exUser.id,
+        PlanSummaryId: id,
+      },
+      limit: 1,
+    })
+      .then((result) => {
+        return res.json({
+          code: 200,
+          success: true,
+          message: "정상적으로 삭제되었습니다.",
+        });
+      })
+      .catch((err) => {
+        return res.status(202).json({
+          code: 202,
+          success: false,
+          message: "실패하였습니다.",
+        });
+      });
+  } catch (err) {
+    console.error(err);
+  }
+});
+
 router.get("/download", async (req, res, next) => {
   const email = req.query.email;
   const id = req.query.id;
