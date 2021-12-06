@@ -104,4 +104,16 @@ router.get("/logout", isLoggedIn, (req, res) => {
   }
 });
 
+router.patch("/profile", isLoggedIn, (req,res)=>{
+  const id = req.test;
+  try{
+    return res.json({
+      code:200,
+      req:id
+    })
+  }catch(err){
+    console.error(err)
+  }
+})
+
 module.exports = router;

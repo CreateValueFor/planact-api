@@ -238,7 +238,7 @@ router.get("/summary", async (req, res, next) => {
   try {
     if (search) {
       const plans = await PlanSummary.findAndCountAll({
-        order: [["createdAt", "DESC"]],
+        order: [["downloads", "DESC"]],
         where: {
           [Op.or]: [
             {
@@ -263,7 +263,7 @@ router.get("/summary", async (req, res, next) => {
 
     if (email === "all") {
       const plans = await PlanSummary.findAndCountAll({
-        order: [["createdAt", "DESC"]],
+        order: [["downloads", "DESC"]],
       });
       // const count = await PlanSummary.count
       return res.status(200).json({
