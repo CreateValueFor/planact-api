@@ -3,8 +3,25 @@ const passport = require("passport");
 const bcrypt = require("bcryptjs");
 const { isLoggedIn, isNotLoggedIn } = require("./middlewares");
 const User = require("../models/user");
-
+const { v4: uuidv4 } = require("uuid");
 const router = express.Router();
+const multer = require('multer')
+let imageID;
+const storage = multer.diskStorage({
+  destination:(req, file, callback)=>{
+    callback(null, "uploads/profile");
+  },
+  filename:(req,file, callback)=>{
+    const ext = file.originalname.split(".")[1];
+    imageID = uuidv4();
+    callback(null, `${imageID}.${ext}`);
+  },
+  encoding:(req, file, callback)=>{
+    callback(null, "utf-8")
+  }
+})
+
+const uploader = multer({storage:storage})
 
 router.get("/session", async (req, res, next) => {
   try {
@@ -104,12 +121,37 @@ router.get("/logout", isLoggedIn, (req, res) => {
   }
 });
 
-router.patch("/profile", isLoggedIn, (req,res)=>{
-  const id = req.test;
+router.patch("/profile",uploader.single("thumb"), async(req,res)=>{
+  let ext;
+  console.log(req.body)
+  if (req.file) {
+    ext = req.file.originalname.split(".")[1];
+  } else {
+    imageID = "";
+    ext = "";
+  }
+  const nick = req.body.nick;
+  const email = req.body.email;
+
+
   try{
+    const exUser = await User.findOne({where:{email }});
+    if(!exUser){
+      return res.status(202).json({
+        code:202,
+        message:"유저가 존재하지 않습니다."
+      })
+    }
+    await User.update({
+      nick,
+      thumb:imageID
+    },{where:{email}})
+
+
     return res.json({
       code:200,
-      req:id
+      nick:nick,
+      thumb:imageID
     })
   }catch(err){
     console.error(err)
